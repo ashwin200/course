@@ -1,11 +1,13 @@
 module Course
 (
   module L01.Optional
+, module L01.Id
 , module L01.Validation
 , module L01.Id
 , module L02.List
 , module L03.Fuunctor
 , module L03.Moonad
+, module L03.Interactive
 , module L03.State
 , module L03.StateT
 , module L04.ListZipper
@@ -24,11 +26,13 @@ module Course
 ) where
 
 import L01.Optional
+import L01.Id
 import L01.Validation
 import L01.Id
 import L02.List
 import L03.Fuunctor
 import L03.Moonad
+import L03.Interactive
 import L03.State
 import L03.StateT
 import L04.ListZipper
