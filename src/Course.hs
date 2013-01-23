@@ -2,6 +2,7 @@ module Course
 (
   module L01.Optional
 , module L01.Validation
+, module L01.Id
 , module L02.List
 , module L03.Fuunctor
 , module L03.Moonad
@@ -24,6 +25,7 @@ module Course
 
 import L01.Optional
 import L01.Validation
+import L01.Id
 import L02.List
 import L03.Fuunctor
 import L03.Moonad

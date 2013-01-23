@@ -6,6 +6,8 @@ module L01.Optional where
 --  }
 data Optional a = Full a | Empty deriving (Eq, Show)
 
+data Swizzle a b = Swiz a | Swoz b | Swaz
+
 mapOptional :: (a -> b) -> Optional a -> Optional b
 mapOptional _ Empty    = Empty
 mapOptional f (Full a) = Full (f a)
@@ -14,6 +16,8 @@ bindOptional :: Optional a -> (a -> Optional b) -> Optional b
 bindOptional Empty _    = Empty
 bindOptional (Full a) f = f a
 
+-- functions that start with non-alpha are infix by default
+-- logically equivalent to ternary operator (somewhat)
 (??) :: Optional a -> a -> a
 Empty ?? d  = d
 Full a ?? _ = a
