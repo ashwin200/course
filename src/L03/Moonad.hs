@@ -97,22 +97,72 @@ lift4 f ma mb mc md = apply (lift3 f ma mb mc) md
 -- Exercise 15
 -- Relative Difficulty: 3
 seequence :: Moonad m => [m a] -> m [a]
-seequence = error "todo"
+--bind :: (a -> m b) -> m a -> m b
+-- m a -> m [a]
+-- lift2 :: (head -> tail -> head : tail) -> m a -> m b -> m c
+-- mh :: m a
+-- mt :: [m a]
+-- lift2 (:) :: m a -> m [a] -> m [a]
+seequence [] = reeturn []
+seequence (mh:mt) = lift2 (:) mh (seequence mt)
+
+seequence' :: Moonad m => [m a] -> m [a]
+seequence' = foldr (lift2 (:)) (reeturn [])
 
 -- Exercise 16
 -- Relative Difficulty: 3
 traaverse :: Moonad m => (a -> m b) -> [a] -> m [b]
-traaverse = error "todo"
+--bind :: (a -> m b) -> m a -> m b
+--seequence :: [m a] -> m [a]
+--f :: a -> m b
+--h :: a
+--t :: [a]
+--map f list :: (a->mb) -> [a] -> [mb]
+traaverse f x = seequence  (map f x)
 
 -- Exercise 17
 -- Relative Difficulty: 4
 reeplicate :: Moonad m => Int -> m a -> m [a]
-reeplicate = error "todo"
+--seequence :: [m a] -> m [a]
+--reeplicate n ma = seequence (reeplicate' n ma [])
+reeplicate n ma = seequence (repl n ma)
+
+repl :: Int -> a -> [a]
+repl n a 
+   | n <= 0 = []
+   | otherwise = a : repl (n-1) a
 
 -- Exercise 18
 -- Relative Difficulty: 9
 filtering  :: Moonad m => (a -> m Bool) -> [a] -> m [a]
-filtering = error "todo"
+-- h :: a
+-- f h :: m Bool
+-- \ :: Bool -> a -> [a]
+-- lift2 \ (f h) (m h) :: (Bool -> a -> [a]) -> m Bool -> m a -> m [a]
+-- lift2 :: Moonad m => (a -> b -> c) -> m a -> m b -> m c 
+-- lift2 (\b e -> if b then [e] else []) (f h) (reeturn h) :: m [a]
+-- filtering f t :: m [a]
+-- lift2 (++) m[a] m[a] :: ([a] -> [a] -> [a]) -> m[a] -> m[a] -> m[a]
+filtering _ [] = reeturn []
+filtering f (h:t) = lift2 (++) (lift2 (\b e -> if b then [e] else []) (f h) (reeturn h)) (filtering f t)
+
+filtering' :: Moonad m => (a -> m Bool) -> [a] -> m [a]
+filtering' f list = foldr (lift2 (++)) (reeturn []) (map (\h -> lift2 (\b e -> if b then [e] else []) (f h) (reeturn h)) list)
+
+
+filtering'' :: Moonad m => (a -> m Bool) -> [a] -> m[a]
+--bind :: (b -> m a) -> m b -> m a
+--filtering'' f t -> m[a]
+-- f h :: m Bool
+-- fmaap' (\list -> h : list) (filtering'' f t) :: ([a] -> [a]) m [a]
+filtering'' f list
+   | null list = reeturn []
+   | otherwise  = bind (\b -> if b then fmaap' (\list -> h : list) remaining else remaining) (f h) 
+        where h = head(list)
+              t = tail(list)
+              remaining = filtering'' f t
+
+            
 
 -----------------------
 -- SUPPORT LIBRARIES --
