@@ -7,7 +7,7 @@ Write an API for the tic-tac-toe game. Do not use variables -- they are not perm
 
 * `whoWon`: takes a tic-tac-toe board and returns the player that won the game (or a draw if neither). This function can only be called on a board that is finished. Calling move on a game board that is in-play is a *compile-time type error*.
 
-* `takeBack`: takes either a finished board or a board in-play that has had at least one move and returns a board in-play. It is a compile-time type error to call this function on an empty board.
+* `takeBack`: takes either a finished board or a board in-play that has had at least one move and returns a board in-play, or an empty board. It is a compile-time type error to call this function on an empty board.
 
 * `playerAt`: takes a tic-tac-toe board and position and returns the (possible) player at a given position. This function works on any type of board.
 
