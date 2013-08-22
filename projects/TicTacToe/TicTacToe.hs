@@ -9,10 +9,6 @@ import qualified Data.Map as Map
 data Player = Naught | Cross
 	deriving (Eq, Show)
 
-data EmptyBoard = 
-	EmptyBoard
-	deriving (Eq, Show)
-
 data Board =  
 	Board (Map Position Player) [(Position, Player)]
 	deriving (Eq, Show)
@@ -45,27 +41,36 @@ data GameResult =
 	Draw | Winner Player
 	deriving (Show, Eq)
 
-move' :: EmptyBoard -> Position -> Board
-move' EmptyBoard position = Board (Map.fromList [firstMove]) [firstMove]
-	where firstMove = (position, Naught)
+move0 :: Player -> Position -> Board
+move0 player position = Board (Map.fromList [firstMove]) [firstMove]
+	where firstMove = (position, player)
 
 board :: Outcome -> Board 
 board (InPlay board) = board
 board (Done (FinishedBoard board result)) = board
 board (InvalidMove board) = board
 
-move :: NonFinishedBoard -> Position -> Outcome
-move Empty position = InPlay (move' EmptyBoard position)
-move (NotEmpty (Board map moveHistory)) position
+move :: Board -> Position -> Outcome
+move (Board map moveHistory) position
 	| Map.member position map = InvalidMove (Board map moveHistory)
 	| result /= Nothing = Done (FinishedBoard newBoard (Maybe.fromJust result))
 	| otherwise = InPlay newBoard
-    where newBoard = move'' (Board map moveHistory) position
+    where newBoard = placePlayer (Board map moveHistory) position
           result = finished newBoard
 
-move'' :: Board -> Position -> Board
-move'' (Board map moveHistory) position = Board (Map.insert position player map) ((position, player):moveHistory)
-    where player = currentPlayer (snd(head moveHistory))
+placePlayer :: Board -> Position -> Board
+placePlayer (Board map moveHistory) position = Board (Map.insert position player map) ((position, player):moveHistory)
+    where player = switch (snd(head moveHistory))
+
+switch :: Player -> Player
+switch Naught = Cross
+switch Cross = Naught
+
+move' :: Outcome -> Position -> Outcome
+move' (InvalidMove board) _ = InvalidMove board
+move' (InPlay board) position = move board position 
+move' (Done finishedBoard) _ = Done finishedBoard
+
 
 finished :: Board -> Maybe GameResult
 finished (Board map moves)
@@ -75,7 +80,7 @@ finished (Board map moves)
 
 
 hasWinner :: Board -> Bool
-hasWinner (Board map moves) = isRowFilled (Board map moves) position player || isColumnFilled (Board map moves) position player || areDiagonalsFilled (Board map moves) player
+hasWinner board@(Board map moves) = isRowFilled board position player || isColumnFilled board position player || areDiagonalsFilled board player
     where player = snd(head moves)
           position = fst(head moves)
 
@@ -97,16 +102,6 @@ occupiesPlaces (Board map moves) player (x:xs)
 	| otherwise = False  
 
 
-isSameRow :: Position -> Position -> Bool
-isSameRow (Position (x, _)) (Position (y, _)) = x == y
-
-isSameColumn :: Position -> Position -> Bool
-isSameColumn (Position (_, x)) (Position (_, y)) = x == y 
-
-currentPlayer :: Player -> Player
-currentPlayer Naught = Cross
-currentPlayer Cross = Naught
-
 playerAt :: Board -> Position -> Maybe Player
 playerAt (Board map _) position = Map.lookup position map
 
@@ -117,6 +112,22 @@ takeBack :: NonEmptyBoard -> NonFinishedBoard
 takeBack (Finished (FinishedBoard board _)) = takeBack (Unfinished board)
 takeBack (Unfinished (Board _ (previousMove:[]))) = Empty 
 takeBack (Unfinished (Board map ((position, player):xs))) = NotEmpty (Board (Map.delete position map) xs)
+
+takeBack' :: NonFinishedBoard -> NonFinishedBoard
+takeBack' Empty = Empty
+takeBack' (NotEmpty board) = tackBack (NonEmpty board)
+
+prettyPrint :: Board -> [[Char]]
+prettyPrint board = [[printCell board (Position (LL, LL)), printCell board (Position (LL, MM)), printCell board (Position (LL, RR))],
+					[printCell board (Position (MM, LL)), printCell board (Position (MM, MM)), printCell board (Position (MM, RR))],
+					[printCell board (Position (RR, LL)), printCell board (Position (RR, MM)), printCell board (Position (RR, RR))]]
+
+printCell :: Board -> Position -> Char
+printCell (Board map _) position
+	| Map.lookup position map == Just Naught = 'O'
+	| Map.lookup position map == Just Cross = 'X'
+	| otherwise = '-'
+
 
 instance Arbitrary Index where
 	arbitrary = elements [LL, MM, RR]
